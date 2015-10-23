@@ -2,7 +2,7 @@ FROM ubuntu:trusty
 MAINTAINER Jeffery Utter "jeff.utter@firespring.com"
 
 RUN apt-get update \
-  && apt-get install -y cpanminus build-essential supervisor libdbd-mysql-perl sysstat \
+  && apt-get install -y cpanminus build-essential supervisor libdbd-mysql-perl sysstat sqlite3 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
