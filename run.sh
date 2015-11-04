@@ -14,13 +14,14 @@ mogadm --trackers=127.0.0.1:7001 device add mogilestorage 1
 if [ "$domain" != "" ]
 then
   mogadm --trackers=127.0.0.1:7001 domain add $domain
+  mogadm class modify sbf default --replpolicy='MultipleDevices()'
 
   # Add all given classes
   if [ "$classes" != "" ]
   then
     for class in $classes
     do
-      mogadm --trackers=127.0.0.1:7001 class add $domain $class
+      mogadm --trackers=127.0.0.1:7001 class add $domain $class --replpolicy="MultipleDevices()"
     done
   fi
 fi
