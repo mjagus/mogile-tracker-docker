@@ -1,5 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 set -x
+
+if [ "`basename $1`" == "bash" ]
+then
+  exec "$@"
+  exit $?
+fi
 
 domain=$1
 classes=$2
@@ -10,6 +16,7 @@ sudo -u mogile mogilefsd --daemon -c /etc/mogilefs/mogilefsd.conf
 
 mogadm --trackers=127.0.0.1:7001 host add mogilestorage --ip=mogile-node --port=7500 --status=alive
 mogadm --trackers=127.0.0.1:7001 device add mogilestorage 1
+mogadm --trackers=127.0.0.1:7001 device add mogilestorage 2
 
 if [ "$domain" != "" ]
 then
