@@ -1,19 +1,26 @@
 FROM ubuntu:trusty
 MAINTAINER Jeffery Utter "jeff.utter@firespring.com"
 
+RUN bash -c "debconf-set-selections <<< 'mysql-server mysql-server/root_password password super'"
+RUN bash -c "debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password super'"
+
 RUN apt-get update \
-  && apt-get install -y cpanminus build-essential supervisor libdbd-mysql-perl sysstat sqlite3 \
+  && apt-get install -y cpanminus build-essential supervisor libdbd-mysql-perl sysstat mysql-server libmysqlclient-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+#RUN mysql_secure_installation
 
 RUN mkdir -p /etc/mogilefs \
   && mkdir -p /var/mogdata/
 
 RUN cpanm install --force MogileFS::Server \
-  && cpanm install DBD::SQLite \
+  && cpanm install DBD::mysql \
   && cpanm install MogileFS::Utils
 
-RUN mogdbsetup --type=SQLite --yes --dbname=/var/mogdata/mogilefs.sqlite3
+RUN mysqld & \
+  until [ `mysql -h127.0.0.1 -uroot -psuper -e 'select null limit 1' 2>/dev/null >/dev/null; echo $?` -eq 0 ]; do sleep 1; done \
+  && mogdbsetup --type=MySQL --yes --dbrootuser=root --dbrootpass=super
 
 ADD mogilefsd.conf /etc/mogilefs/mogilefsd.conf
 ADD mogilefs.conf /root/.mogilefs.conf

@@ -1,20 +1,30 @@
 #!/bin/bash
 set -x
 
-if [ "`basename $1`" == "bash" ]
-then
-  exec "$@"
-  exit $?
-fi
-
 domain=$1
 classes=$2
 
-sleep 5 #wait for node to start
+node=$3
+if [ "`echo $node`" == "" ]
+then
+  node="mogile-node"
+fi
+
+port=$4
+if [ "`echo $port`" == "" ]
+then
+  port="7500"
+fi
+
+# Start mysql database
+mysqld &
+
+# wait for node to start
+sleep 5
 
 sudo -u mogile mogilefsd --daemon -c /etc/mogilefs/mogilefsd.conf
 
-mogadm --trackers=127.0.0.1:7001 host add mogilestorage --ip=mogile-node --port=7500 --status=alive
+mogadm --trackers=127.0.0.1:7001 host add mogilestorage --ip=$node --port=$port --status=alive
 mogadm --trackers=127.0.0.1:7001 device add mogilestorage 1
 mogadm --trackers=127.0.0.1:7001 device add mogilestorage 2
 
