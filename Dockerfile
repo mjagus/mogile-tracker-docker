@@ -9,7 +9,7 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-mkdir -p /etc/mysql/conf.d \
+RUN mkdir -p /etc/mysql/conf.d \
   && { \
     echo '[mysqld]'; \
     echo 'skip-host-cache'; \
@@ -28,7 +28,8 @@ RUN cpanm install --force MogileFS::Server \
 
 RUN mysqld & \
   until [ `mysql -h127.0.0.1 -uroot -psuper -e 'select null limit 1' 2>/dev/null >/dev/null; echo $?` -eq 0 ]; do sleep 1; done \
-  && mogdbsetup --type=MySQL --yes --dbrootuser=root --dbrootpass=super
+  && mysql -uroot -psuper -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'super';" \
+  && mogdbsetup --type=MySQL --yes --dbrootuser=root --dbrootpass=super --dbname=mogilefs --dbuser=mogile --dbpassword=sekrit
 
 ADD mogilefsd.conf /etc/mogilefs/mogilefsd.conf
 ADD mogilefs.conf /root/.mogilefs.conf
