@@ -1,9 +1,6 @@
 #!/bin/bash
 set -x
 
-DOMAIN_NAME=$1
-CLASS_NAMES=$2
-
 if [ "`echo ${NODE_HOST}`" == "" ]
 then
   NODE_HOST="mogile-node"
