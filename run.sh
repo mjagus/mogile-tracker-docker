@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/usr/bin/dumb-init /bin/bash
+
 set -x
 
 if [ "`echo ${NODE_HOST}`" == "" ]
 then
-  NODE_HOST="mogile-node"
+  NODE_HOST=$(getent hosts mogile-node | awk '{ print $1 }')
 fi
 
 if [ "`echo ${NODE_PORT}`" == "" ]
@@ -19,23 +20,26 @@ sleep 5
 
 sudo -u mogile mogilefsd --daemon -c /etc/mogilefs/mogilefsd.conf
 
-mogadm --trackers=127.0.0.1:7001 host add mogilestorage --ip=${NODE_HOST} --port=${NODE_PORT} --status=alive
-mogadm --trackers=127.0.0.1:7001 device add mogilestorage 1
-mogadm --trackers=127.0.0.1:7001 device add mogilestorage 2
+mogadm host add mogilestorage --ip=${NODE_HOST} --port=${NODE_PORT} --status=alive
+mogadm device add mogilestorage 1
+mogadm device add mogilestorage 2
 
-if [ "`echo ${DOMAIN_NAME}`" != "" ]
+# Add all given domains
+if [ "`echo ${DOMAIN_NAMES}`" != "" ]
 then
-  mogadm --trackers=127.0.0.1:7001 domain add ${DOMAIN_NAME}
-  mogadm class modify sbf default --replpolicy='MultipleDevices()'
-
-  # Add all given classes
-  if [ "`echo ${CLASS_NAMES}`" != "" ]
-  then
-    for class in ${CLASS_NAMES}
+    for domain in ${DOMAIN_NAMES}
     do
-      mogadm --trackers=127.0.0.1:7001 class add ${DOMAIN_NAME} $class --replpolicy="MultipleDevices()"
+      mogadm domain add $domain
+
+      # Add all given classes
+      if [ "`echo ${CLASS_NAMES}`" != "" ]
+      then
+        for class in ${CLASS_NAMES}
+        do
+          mogadm --trackers=127.0.0.1:7001 class add $domain $class --replpolicy="MultipleDevices()"
+        done
+      fi
     done
-  fi
 fi
 
 mogadm check

@@ -1,11 +1,12 @@
 FROM ubuntu:trusty
-MAINTAINER Jeffery Utter "jeff.utter@firespring.com"
 
 RUN bash -c "debconf-set-selections <<< 'mysql-server mysql-server/root_password password super'"
 RUN bash -c "debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password super'"
 
 RUN apt-get update \
-  && apt-get install -y cpanminus build-essential supervisor libdbd-mysql-perl sysstat mysql-server libmysqlclient-dev \
+  && apt-get install -y cpanminus build-essential supervisor libdbd-mysql-perl sysstat mysql-server libmysqlclient-dev wget \
+  && wget https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64.deb \
+  && dpkg -i dumb-init_*.deb \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
